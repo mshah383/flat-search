@@ -8,6 +8,7 @@ pyqt5 = "*"
 
 [dev-packages]
 autopep8 = "*"
+python-lorem = "*"
 
 [requires]
 python_version = "3.9"

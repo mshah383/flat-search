@@ -2,9 +2,10 @@
 Module containing the plain data objects
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Optional
 from datetime import datetime
+from time import time
 
 
 @dataclass
@@ -26,7 +27,7 @@ class Property():
     bedrooms: Optional[int] = None
     """ the number of bedrooms inside the property  """
 
-    image_urls: List[str] = []
+    image_urls: List[str] = field(default_factory=list)
     """ A list of urls to all the available images of the property """
 
     address: Optional[str] = None
@@ -37,3 +38,34 @@ class Property():
 
     description: str = ""
     """ the description provided for the property """
+
+    def make_random_property():
+        """ generates a property instance with randon data """
+        from lorem import word, paragraph, sentence
+        from random import randint, Random
+
+        RANDOM_IMAGE_URLS = [
+            "https://lid.zoocdn.com/u/1200/900/17e60f152629ae93c23da3900e40cae74311c8e0.jpg:p",
+            "https://lid.zoocdn.com/u/1200/900/4c47d0c76fd55da441e984b83663babecb6a3770.jpg:p",
+            "https://lid.zoocdn.com/u/1200/900/a4cd1785367a53d227ab4c72d745bbf1d996bc09.jpg:p",
+            "https://lid.zoocdn.com/u/1200/900/baae1f81c77ec233de9055e883e36709571dd9f1.jpg:p",
+            "https://lid.zoocdn.com/645/430/96805cdce251962cc07ed53225ec0ff2d648f386.jpg",
+        ]
+        RANDOM = Random()
+
+        return Property(
+            listing_url="https://www.zoopla.co.uk/to-rent/details/60337626/?search_identifier=69e30057ba2b75d95fbac60db87cceec",
+            date_found=datetime.fromtimestamp(time() - randint(0, 60 * 120)),
+            price_per_month=randint(500, 5000),
+            deposit=randint(1000, 10000),
+            bedrooms=randint(1, 5),
+            image_urls=RANDOM.choices(RANDOM_IMAGE_URLS, k=randint(0, 4)),
+            address=sentence().__next__(),
+            available_from=datetime.fromtimestamp(
+                time() + randint(0, 60 * 600)),
+            description=paragraph().__next__()
+        )
+
+
+if __name__ == "__main__":
+    print(Property.make_random_property())
