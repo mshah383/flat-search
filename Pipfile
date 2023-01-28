@@ -5,6 +5,14 @@ name = "pypi"
 
 [packages]
 pyqt5 = "*"
+beautifulsoup4 = "==4.11.1"
+pip = "*"
+fake-useragent = "==1.1.1"
+requests = "==2.28.2"
+python-dotenv = "==0.21.1"
+free-proxy = "==1.1.0"
+dateparser = "==1.1.2"
+asyncio = "==3.4.3"
 
 [dev-packages]
 autopep8 = "*"

@@ -3,9 +3,23 @@ Module containing the plain data objects
 """
 
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import List, Optional
 from datetime import datetime
 from time import time
+
+
+class PropertyType(Enum):
+    FLAT = 1,
+    """ a flat in a larger building sharing walls with other flats """
+    STUDIO = 2,
+    """ a one room flat """
+    DETACHED_HOUSE = 3,
+    """ a standalone house """
+    TERRACED_HOUSE = 4,
+    """ a house connected to other houses """
+    ROOM = 5,
+    """ a room in a property shared with other rooms and utilities """
 
 
 @dataclass
@@ -17,6 +31,9 @@ class Property():
 
     date_found: datetime
     """ the date this property was indexed """
+
+    property_type: PropertyType
+    """ the type of this property """
 
     price_per_month: Optional[int] = None
     """ the price per calendar month without decimals """
@@ -35,6 +52,9 @@ class Property():
 
     available_from: Optional[datetime] = None
     """ the date this property is being advertised for """
+
+    date_listed: Optional[datetime] = None
+    """ the date this property was listed on the website we are searching through """
 
     description: str = ""
     """ the description provided for the property """
@@ -65,6 +85,10 @@ class Property():
                 time() + randint(0, 60 * 600)),
             description=paragraph().__next__()
         )
+
+    def short_summary(self) -> str:
+        """ returns short summary with hyperlinks for command line usage"""
+        return f"{self.property_type.name} : {self.address} : {self.listing_url}"
 
 
 if __name__ == "__main__":
