@@ -1,11 +1,19 @@
 {
     "property_type_allowlist": [
-        "FLAT",
-        "DETACHED_HOUSE",
-        "TERRACED_HOUSE",
-        "STUDIO"
+        "flat",
+        "detached house",
+        "terraced house",
+        "studio"
     ],
     "min_price": 300,
-    "max_price": 1100,
-    "location": "London"
+    "max_price": 1300,
+    "location": "London",
+    "scrape_delay_minimum_seconds": 300,
+    "scrape_delay_maximum_seconds": 600,
+    "email_recipients": [
+        "makspl17@gmail.com",
+        "12shahm@gmail.com"
+    ],
+    "email_template": "email_template.html",
+    "za_area": "London"
 }

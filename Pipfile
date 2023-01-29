@@ -14,6 +14,7 @@ free-proxy = "==1.1.0"
 dateparser = "==1.1.2"
 asyncio = "==3.4.3"
 dataclasses-json = "==0.5.7"
+jinja2 = "==3.1.0"
 
 [dev-packages]
 autopep8 = "*"

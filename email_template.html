@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <style>
+        html,
+        body {
+            font-family: verdana, sans-serif;
+            height: 100%;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-column {
+            background-color: #400B00;
+            color: gray;
+            text-shadow: 0 1px black;
+            box-shadow: 0px 2px 6px black;
+            padding: 0px 20px 20px 20px;
+            flex-grow: 1;
+        }
+
+        .listing-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .listing {
+            background-color: black;
+            padding: 0px 20px 20px 20px;
+            margin: 5px 5px;
+        }
+
+        .listing img {
+            height: 100%;
+            max-height: 500px;
+            width: 100%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-column">
+        <h1>Property Updates - {{ date.strftime('%A, %B') }}</h1>
+        <hr />
+
+        <div class="listing-container">
+            {% for property in properties %}
+            {% set p = property.value %}
+
+            <div class="listing">
+                {% if p.property_type %}
+                <h2>{{ p.property_type.value | capitalize }} </h2>
+                {% else %}
+                <h2>Flat</h2>
+                {% endif %}
+
+                <h2>
+                    {% if property.added %}
+                    <b>NEW:</b>
+                    {% elif property.removed %}
+                    <b>REMOVED:</b>
+                    {% endif %}
+
+                    {{ p.address or "" }}. {{ p.description or "" }}
+                </h2>
+                {% if p.available_from %}
+                <h3>Available from: {{ p.available_from }}</h3>
+                {% endif %}
+                <hr />
+                <h3> {{ p.price_per_month or "MIA" }} pcm - {{ p.bedrooms or 1 }} bedroom\s</h3>
+                {% if p.image_urls|length > 0 %}
+                <img src="{{ p.image_urls[0] }}" />
+                {% endif %}
+                {% if property.updates %}
+                <hr />
+                <ul>
+                    {% for u in property.updates %}
+                    <li>{{ u.field_name| replace('_',' ') }}: changed from `<b>{{ u.old }}</b>` to `<b>{{ u.new }}</b>`
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,18 +1,18 @@
 from asyncio import sleep
 from datetime import datetime
-import os
 from typing import Any, Callable, Tuple, Union, List
 from flat_search.backends import PropertyDataProvider
 from flat_search.data import Property, PropertyType
 import requests as r
 from fake_useragent import UserAgent
 from os import getenv
-from fp.fp import FreeProxy
-from random import choice, randint
+from random import randint
 import logging
-from bs4 import BeautifulSoup, NavigableString, Tag
+from bs4 import BeautifulSoup, Tag
 from dateparser.search import search_dates
 from urllib.parse import urlparse
+
+from flat_search.settings import Settings
 
 
 class Za(PropertyDataProvider):
@@ -25,16 +25,15 @@ class Za(PropertyDataProvider):
         - page_no - the 1 indexed page number
         """
 
-    def __init__(self, area="London") -> None:
-        super().__init__()
-        self.area = area
+    def __init__(self, settings: Settings) -> None:
+        super().__init__(settings)
         self.url = getenv("ZA_URL_FORMAT",
                           "set the ZA_URL_FORMAT variable in .env file") + "&is_retirement_home=false"
         url_kwargs = {
-            "area": self.area,
-            "location_query": self.location,
-            "price_min": self.min_price,
-            "price_max": self.max_price,
+            "area": self.settings.za_area,
+            "location_query": self.settings.location,
+            "price_min": self.settings.min_price,
+            "price_max": self.settings.max_price,
         }
 
         self.base_url = "{uri.scheme}://{uri.netloc}".format(uri=urlparse(
@@ -96,10 +95,10 @@ class Za(PropertyDataProvider):
 
         # kwargs without page number
         url = self.url
-        for property_type in Za.format_property_types(self.property_type_allowlist):
+        for property_type in Za.format_property_types(self.settings.property_type_allowlist):
             url += f"&property_sub_type={property_type}"
 
-        if PropertyType.ROOM not in self.property_type_allowlist:
+        if PropertyType.ROOM not in self.settings.property_type_allowlist:
             url += f"&is_shared_accommodation=false"
 
         # select a proxy once per scrape attempt
@@ -116,10 +115,10 @@ class Za(PropertyDataProvider):
         }
 
         url_kwargs = {
-            "area": self.area,
-            "location_query": self.location,
-            "price_min": self.min_price,
-            "price_max": self.max_price,
+            "area": self.settings.za_area,
+            "location_query": self.settings.location,
+            "price_min": self.settings.min_price,
+            "price_max": self.settings.max_price,
         }
 
         # try to get all the available pages, they might change last number available dynamically so keep track of that
@@ -235,17 +234,3 @@ class Za(PropertyDataProvider):
         logging.info(
             f"Properties found on page: {page_no} : {[x.short_summary() for x in properties]}")
         return (properties, at_least_one_more_page_navigable)
-
-
-if __name__ == "__main__":
-    import asyncio
-    logging.basicConfig(format='%(levelname)s:%(message)s',
-                        level=logging.DEBUG)
-
-    async def main():
-        backend = Za(area="London").set_min_price("0").set_max_price(
-            "1300").set_property_type_allowlist([PropertyType.FLAT]).set_location("NW10")
-
-        return await backend.retrieve_all_properties()
-
-    asyncio.run(main())
