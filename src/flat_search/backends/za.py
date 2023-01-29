@@ -11,7 +11,7 @@ from fp.fp import FreeProxy
 from random import choice, randint
 import logging
 from bs4 import BeautifulSoup, NavigableString, Tag
-import dateparser
+from dateparser.search import search_dates
 from urllib.parse import urlparse
 
 
@@ -29,16 +29,16 @@ class Za(PropertyDataProvider):
         super().__init__()
         self.area = area
         self.url = getenv("ZA_URL_FORMAT",
-                          "set the ZA_URL_FORMAT variable in .env file")
-        self.url_kwargs = {
+                          "set the ZA_URL_FORMAT variable in .env file") + "&is_retirement_home=false"
+        url_kwargs = {
             "area": self.area,
             "location_query": self.location,
             "price_min": self.min_price,
             "price_max": self.max_price,
         }
 
-        self.base_url = "{uri.scheme}://{uri.netloc}/".format(uri=urlparse(
-            self.url.format(**self.url_kwargs, page_no=0)))
+        self.base_url = "{uri.scheme}://{uri.netloc}".format(uri=urlparse(
+            self.url.format(**url_kwargs, page_no=0)))
 
     def result_or_none_if_throws(logged_error_msg: str, callable: Callable[[], Union[Any, None]]):
         """ calls the given function and on an exception, logs it then returns None otherwise returns the result """
@@ -95,10 +95,13 @@ class Za(PropertyDataProvider):
         ua = UserAgent(browsers=['edge', 'chrome', 'safari']).random
 
         # kwargs without page number
-
         url = self.url
         for property_type in Za.format_property_types(self.property_type_allowlist):
             url += f"&property_sub_type={property_type}"
+
+        if PropertyType.ROOM not in self.property_type_allowlist:
+            url += f"&is_shared_accommodation=false"
+
         # select a proxy once per scrape attempt
         proxy = self.proxies.get(True)
         logging.info(f"Selected proxy: {proxy}")
@@ -112,13 +115,20 @@ class Za(PropertyDataProvider):
             }
         }
 
+        url_kwargs = {
+            "area": self.area,
+            "location_query": self.location,
+            "price_min": self.min_price,
+            "price_max": self.max_price,
+        }
+
         # try to get all the available pages, they might change last number available dynamically so keep track of that
-        current_page, last_page = 1, 1
+        current_page, has_more_pages = 1, True
         all_properties = []
-        while current_page <= last_page:
+        while has_more_pages:
             try:
-                new_properties, last_page = self.parse_page(
-                    current_page, url, kwargs)
+                new_properties, has_more_pages = self.parse_page(
+                    current_page, url, url_kwargs, kwargs)
                 all_properties.extend(new_properties)
                 current_page += 1
                 sleep_time = randint(1, 3)
@@ -126,20 +136,20 @@ class Za(PropertyDataProvider):
                     f"Pretending to be human for {sleep_time}s Zzzz...")
                 await sleep(sleep_time)
             except Exception as E:
-                logging.exception(
-                    "Error in parsing page, ignoring further pages untill next attempt")
-                return all_properties
+                logging.error(
+                    "Error in parsing page, throwing upwards to prevent incomplete data")
+                raise E
 
         return all_properties
 
-    def parse_page(self, page_no, url, request_kwargs) -> Tuple[List[Property], int]:
+    def parse_page(self, page_no, url, url_kwargs, request_kwargs) -> Tuple[List[Property], bool]:
         """ parses a single page of html content from the provider and returns the properties as well as the last available page """
         # update referer to point to previous page if we are not on the first one
         if page_no > 1:
             request_kwargs['headers']['Referer'] = url.format(
-                **self.url_kwargs, page_no=page_no - 1)
+                **url_kwargs, page_no=page_no - 1)
 
-        current_page_url = url.format(**self.url_kwargs, page_no=page_no)
+        current_page_url = url.format(**url_kwargs, page_no=page_no)
         page = r.get(current_page_url,
                      verify=True, **request_kwargs)
         if not page.ok:
@@ -150,22 +160,22 @@ class Za(PropertyDataProvider):
                 f"Received response for page: {page_no}: {page.status_code}")
             page = BeautifulSoup(page.content, 'html.parser')
 
-        # find number of pages total
-        *_, last_page_li = page.find(name="ol").children
-        last_page = int(last_page_li.text.strip())
-
+        # figure out if more pages exist
+        at_least_one_more_page_navigable = page.find("nav", attrs={"aria-label": "pagination"}
+                                                     ).find_all("a")[-1].attrs.get("href", None) is not None
         properties: List[Property] = []
 
         listing_div: Union[Tag, None]
         for listing_div in page.find_all(id=lambda x: x is not None and x.startswith("listing_")):
+            _id = listing_div.attrs.get("id").split("_")[1]
 
             price_per_month = int(listing_div.find(attrs={
-                                  "data-testid": "listing-price"})
-                                  .text
-                                  .strip()
-                                  .removesuffix(" pcm")
-                                  .replace(',', '')
-                                  [1:])
+                "data-testid": "listing-price"})
+                .text
+                .strip()
+                .removesuffix(" pcm")
+                .replace(',', '')
+                [1:])
 
             relative_listing_url = listing_div.find('a', attrs={
                 "href": lambda x: x is not None and x.startswith("/to-rent/details")
@@ -188,13 +198,23 @@ class Za(PropertyDataProvider):
                                                   lambda: " ".join([x.text for x in listing_div.find(
                                                       attrs={"data-testid": "listing-title"}).next_siblings]))
 
-            available_from = Za.result_or_default_if_throws(None,
-                                                            lambda: dateparser.parse(listing_div.find(string=lambda x: x is not None and x.strip(
-                                                            ).startswith("Available")).text, languages=['es'], settings={'DATE_ORDER':  'DMY'}))
+            available_from_text = Za.result_or_default_if_throws(None,
+                                                                 lambda: listing_div.find(string=lambda x: x is not None and x.strip(
+                                                                 ).startswith("Available")).text)
+            if available_from_text is None:
+                available_from = None
+            else:
+                (_, available_from), *_ = search_dates(available_from_text, languages=[
+                    'es'], settings={'DATE_ORDER':  'DMY'}) or [(None, None)]
 
-            date_listed = Za.result_or_none_if_throws("Failed to get date listed",
-                                                      lambda: dateparser.parse(listing_div.find(string=lambda x: x is not None and x.strip(
-                                                      ).startswith("Listed on")).text, languages=['es'], settings={'DATE_ORDER':  'DMY'}))
+            date_listed_text = Za.result_or_none_if_throws("Failed to get date listed",
+                                                           lambda: listing_div.find(string=lambda x: x is not None and x.strip(
+                                                           ).startswith("Listed")).text)
+            if date_listed_text is None:
+                date_listed = None
+            else:
+                (_, date_listed), *_ = search_dates(date_listed_text, languages=[
+                    'es'], settings={'DATE_ORDER':  'DMY'}) or [(None, None)]
 
             listing_title = Za.result_or_none_if_throws("Failed to get listing description",
                                                         lambda: listing_div.find(
@@ -205,9 +225,8 @@ class Za(PropertyDataProvider):
             property_type = Za.result_or_none_if_throws(
                 "Failed to get property type",
                 lambda: Za.read_property_type_from_title(listing_title))
-
             properties.append(
-                Property(listing_url, date_found, property_type=property_type,
+                Property(_id, listing_url, date_found, property_type=property_type,
                          price_per_month=price_per_month, bedrooms=bedrooms, image_urls=image_urls, address=address,
                          available_from=available_from, date_listed=date_listed,
                          description=description)
@@ -215,7 +234,7 @@ class Za(PropertyDataProvider):
 
         logging.info(
             f"Properties found on page: {page_no} : {[x.short_summary() for x in properties]}")
-        return (properties, last_page)
+        return (properties, at_least_one_more_page_navigable)
 
 
 if __name__ == "__main__":

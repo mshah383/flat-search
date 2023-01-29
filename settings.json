@@ -1,0 +1,11 @@
+{
+    "property_type_allowlist": [
+        "FLAT",
+        "DETACHED_HOUSE",
+        "TERRACED_HOUSE",
+        "STUDIO"
+    ],
+    "min_price": 300,
+    "max_price": 1100,
+    "location": "London"
+}

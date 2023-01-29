@@ -1,5 +1,6 @@
 
 
+import json
 from typing import List
 
 from flat_search.data import Property, PropertyType
@@ -44,7 +45,7 @@ class PropertyDataProvider():
         self.property_type_allowlist = [t for t in PropertyType]
         self.request_limiter_minutes = RequestStopwatchLimit(60, 60)
         self.request_limiter_seconds = RequestStopwatchLimit(1, 1)
-        self.proxies = FreeProxy(country_id=['GB'], timeout=0.5,
+        self.proxies = FreeProxy(country_id=['GB'], timeout=0.5, anonym=True,
                                  rand=True)
 
     async def retrieve_all_properties(self) -> List[Property]:
@@ -62,6 +63,16 @@ class PropertyDataProvider():
                 f"Too many request per minute, a maximum of {self.request_limiter_seconds.maximum_uses_per_period} requests per minute is allowed.")
 
         return []
+
+    def set_from_json(self):
+        """ looks for file in current directory called `settings.json` to set values from """
+
+        data = json.load(open("settings.json", "r"))
+        self.min_price = data["min_price"]
+        self.max_price = data["max_price"]
+        self.location = data["location"]
+        self.property_type_allowlist = [PropertyType[x]
+                                        for x in data["property_type_allowlist"]]
 
     def set_min_price(self, min_price: int) -> "PropertyDataProvider":
         """ set the minimum price filter"""
