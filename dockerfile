@@ -1,4 +1,4 @@
-FROM python:3.7-slim as base
+FROM python:3.9 as base
 
 # Setup env
 ENV LANG C.UTF-8
@@ -24,15 +24,10 @@ FROM base AS runtime
 # Copy virtual env from python-deps stage
 COPY --from=python-deps /.venv /.venv
 ENV PATH="/.venv/bin:$PATH"
-
-# Create and switch to a new user
-RUN useradd --create-home appuser
-WORKDIR /home/appuser
-USER appuser
-
+VOLUME /app/data
+WORKDIR /app
 # Install application into container
 COPY . .
 
 # Run the application
-ENTRYPOINT ["python", "src/backend.py"]
-CMD ["--directory", "directory", "8000"]
+CMD python /app/src/backend.py
