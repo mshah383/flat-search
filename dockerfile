@@ -1,4 +1,4 @@
-FROM python:3.9 as base
+FROM python:3.9.12 as base
 
 # Setup env
 ENV LANG C.UTF-8
@@ -15,8 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends gcc
 
 # Install python dependencies in /.venv
 COPY Pipfile .
-COPY Pipfile.lock .
-RUN PIPENV_VENV_IN_PROJECT=1 pipenv install --deploy
+RUN PIPENV_VENV_IN_PROJECT=1 pipenv install --deploy --skip-lock
 
 
 FROM base AS runtime
