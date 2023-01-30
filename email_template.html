@@ -58,9 +58,12 @@
                 {% if p.property_type %}
                 <h2>{{ p.property_type.value | capitalize }} </h2>
                 {% else %}
-                <h2>Flat</h2>
-                {% endif %}
+                <h2>Flat</h2> -
 
+                {% endif %}
+                <a href="{{ p.listing_url }}">
+                    <h3>Listing</h3>
+                </a>
                 <h2>
                     {% if property.added %}
                     <b>NEW:</b>
@@ -71,7 +74,7 @@
                     {{ p.address or "" }}. {{ p.description or "" }}
                 </h2>
                 {% if p.available_from %}
-                <h3>Available from: {{ p.available_from }}</h3>
+                <h3>Available from: {{ p.available_from.strftime('%d %B %Y') }}</h3>
                 {% endif %}
                 <hr />
                 <h3> {{ p.price_per_month or "MIA" }} pcm - {{ p.bedrooms or 1 }} bedroom\s</h3>

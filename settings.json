@@ -10,6 +10,12 @@
     "location": "London",
     "scrape_delay_minimum_seconds": 300,
     "scrape_delay_maximum_seconds": 600,
+    "scrape_delay_page_minimum_seconds": 6,
+    "scrape_delay_page_maximum_seconds": 15,
+    "scrape_max_pages": 3,
+    "scrape_page_size": 100,
+    "send_removed_properties": false,
+    "online_cron_expression": "* 9-20 * * Mon-Fri",
     "email_recipients": [
         "makspl17@gmail.com",
         "12shahm@gmail.com"

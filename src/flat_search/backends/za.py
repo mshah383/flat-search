@@ -95,6 +95,8 @@ class Za(PropertyDataProvider):
 
         # kwargs without page number
         url = self.url
+        url += f"&page_size={max(15,min(100,self.settings.scrape_page_size))}"
+        url += f"&results_sort=newest_listings"
         for property_type in Za.format_property_types(self.settings.property_type_allowlist):
             url += f"&property_sub_type={property_type}"
 
@@ -124,13 +126,15 @@ class Za(PropertyDataProvider):
         # try to get all the available pages, they might change last number available dynamically so keep track of that
         current_page, has_more_pages = 1, True
         all_properties = []
-        while has_more_pages:
+        while has_more_pages and current_page <= self.settings.scrape_max_pages:
             try:
                 new_properties, has_more_pages = self.parse_page(
                     current_page, url, url_kwargs, kwargs)
                 all_properties.extend(new_properties)
+                logging.info(f"Properties found so far: {len(all_properties)}")
                 current_page += 1
-                sleep_time = randint(1, 3)
+                sleep_time = randint(
+                    self.settings.scrape_delay_page_minimum_seconds, self.settings.scrape_delay_page_maximum_seconds)
                 logging.info(
                     f"Pretending to be human for {sleep_time}s Zzzz...")
                 await sleep(sleep_time)

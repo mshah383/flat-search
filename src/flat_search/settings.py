@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 import json
 from typing import List
+from cronex import CronExpression
 
 from dataclasses_json import dataclass_json
 
@@ -30,6 +31,25 @@ class Settings():
     scrape_delay_maximum_seconds: int
     """ the maximum time to wait after each scrape (full)"""
 
+    scrape_delay_page_minimum_seconds: int
+    """ the minimum time to wait after each scraped page """
+
+    scrape_delay_page_maximum_seconds: int
+    """ the maximum time to wait after each scraped page """
+
+    scrape_max_pages: int
+    """ the maximum number of pages to scrape each time """
+
+    scrape_page_size: int
+    """ the page size to use when scraping """
+
+    send_removed_properties: bool
+    """ whether or not to update you on removed properties (not advised) """
+
+    online_cron_expression: str
+    """" the cron expression to use for checking if we are allowed to schedule a scrape (use to block out weird hours where properties won't be updated) """
+
+    """ the cron expression """
     email_recipients: List[str]
     """ the emails to use when sending property updates """
 

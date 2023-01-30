@@ -15,7 +15,7 @@ import jinja2
 import os
 
 
-def generate_email(settings: Settings, changes: PropertyChanges, properties: List[Property]):
+def generate_email(settings: Settings, changes: PropertyChanges, old_properties: List[Property], properties: List[Property]):
 
     template_loader = jinja2.FileSystemLoader(
         searchpath=os.path.dirname(settings.email_template))
@@ -24,19 +24,23 @@ def generate_email(settings: Settings, changes: PropertyChanges, properties: Lis
     template = template_env.get_template(template_file)
 
     properties_dict = {x.id: x for x in properties}
+    old_properties_dict = {x.id: x for x in old_properties}
 
     added = [{"value": properties_dict[id], "updates": [], "added": True, "removed": False}
              for id in changes.appended]
 
-    removed = [{"value": properties_dict[id], "updates": [], "removed": True, "removed": False}
+    removed = [{"value": old_properties_dict[id], "updates": [], "removed": True, "removed": False}
                for id in changes.removed]
 
     updated = [{"value": properties_dict[id], "updates": changes, "added": False, "removed2": False}
                for id, changes in changes.modified.items()]
-    return template.render(properties=[*added, *removed, *updated], date=datetime.datetime.now())
+    template = template.render(
+        properties=[*added, *removed, *updated], date=datetime.datetime.now())
+    logging.info(f"template generated: {template}")
+    return template
 
 
-def send_property_updates_email(settings: Settings, changes: PropertyChanges,  properties: List[Property]):
+def send_property_updates_email(settings: Settings, changes: PropertyChanges, old_properties: List[Property],  properties: List[Property]):
     """ sends the diff from the last scrape to the defined userbase """
 
     logging.info("Sending change emails")
@@ -47,11 +51,12 @@ def send_property_updates_email(settings: Settings, changes: PropertyChanges,  p
     login = os.getenv("SMTP_LOGIN")
     password = os.getenv("SMTP_PASSWORD")
     msg = MIMEMultipart()
-    msg["Subject"] = f"New property updates for {datetime.datetime.now().strftime('%A, %B')}"
+    msg["Subject"] = f"New property updates for {datetime.datetime.now().strftime('%H:%M - %A, %B')}"
     msg["From"] = login
     msg['To'] = ", ".join(settings.email_recipients)
 
-    body_html = MIMEText(generate_email(settings, changes, properties), 'html')
+    body_html = MIMEText(generate_email(
+        settings, changes, old_properties, properties), 'html')
     msg.attach(body_html)  # attaching to msg
 
     context = ssl.create_default_context()
