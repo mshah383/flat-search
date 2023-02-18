@@ -103,10 +103,11 @@ class Za(PropertyDataProvider):
         }
         strategy = PagedPropertyListingStrategy(**settings)
         logging.info(f"Executing za scraping strategy")
-        strategy.execute_strategy(driver)
-        driver.quit()
-        data = strategy.get_data()
-        return data
+        if strategy.execute_strategy(driver):
+            data = strategy.get_data()
+            return data
+        else:
+            raise Exception("Error in strategy")
 
     def parse_page(self, page: str) -> List[Property]:
         """ parses a single page of html content from the provider and returns the properties as well as the last available page """

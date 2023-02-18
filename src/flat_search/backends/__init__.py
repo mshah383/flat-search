@@ -199,10 +199,12 @@ class PropertyDataProvider():
         try:
             properties = await self._retrieve_all(driver, proxy)
             logging.info(f"found {len(properties)} properties.")
+            driver.quit()
             return properties
         except Exception as E:
             proxy.add_failure()
             self.update_proxy_file()
+            driver.save_screenshot('logs/last_screenshot.png')
             send_error_email(self.settings, proxy, E)
             logging.exception(
                 f"Exception in backend: {self.__class__.__name__}, marking proxy as failure")
