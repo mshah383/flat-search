@@ -32,7 +32,8 @@ class Za(PropertyDataProvider):
 
         if settings.no_proxy:
             # don't be crazy! don't get ip banned
-            assert (self.url.netloc.startswith("localhost"))
+            assert (self.url.netloc.startswith("localhost")
+                    or self.url.netloc.startswith('127'))
 
         self.base_url = "{uri.scheme}://{uri.netloc}".format(uri=self.url)
 
@@ -81,10 +82,10 @@ class Za(PropertyDataProvider):
             property_type = PropertyType.DETACHED_HOUSE
         return property_type
 
-    async def _retrieve_all(self, driver: WebDriver, proxy: Proxy) -> List[Property]:
+    async def _retrieve_all(self, driver: WebDriver, proxy: Union[Proxy, None]) -> List[Property]:
         settings = {
             #  warmup settings
-            "query_url": self.url._replace(scheme=proxy.url.scheme).geturl(),
+            "query_url": self.url._replace(scheme=proxy.url.scheme).geturl() if proxy else self.url.geturl(),
             "query_decoy_queries":  self.settings.decoy_queries,
             "query_decoy_probability": self.settings.decoy_probability,
             "query_decoy_max": self.settings.max_decoys,

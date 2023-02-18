@@ -2,7 +2,7 @@ import logging
 import os
 import json
 import random
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 from fake_useragent import UserAgent
 
 from flat_search.data import Property
@@ -16,6 +16,8 @@ from flat_search.email import send_error_email
 from flat_search.settings import Settings
 import requests
 from urllib.parse import ParseResult, urlparse
+import seleniumwire.undetected_chromedriver as uc
+
 from copy import deepcopy
 # load dotenv if possible
 load_dotenv()
@@ -129,14 +131,15 @@ class PropertyDataProvider():
     def make_fake_user(self) -> Tuple[WebDriver, Proxy]:
 
         # setup driver
-        opts = FirefoxOptions()
-        opts.add_argument("--headless")
-        if os.getenv("ENV", "dev") == "dev":
-            service_args = ['--marionette-port', '2828', '--connect-existing']
-        else:
-            service_args = []
+        opts = uc.ChromeOptions()
+        opts.add_argument('--disable-blink-features=AutomationControlled')
 
-        profile = webdriver.FirefoxProfile()
+        if os.getenv("ENV", "dev") == "dev":
+            opts.debugger_address = "localhost:2828"
+            # opts.add_argument('--remote-debugging-port=2828')
+            opts.add_experimental_option('debuggerAddress', "localhost:2828")
+        else:
+            opts.add_argument("--headless")
 
         # choose random user agent
         user_agent = random.choice(["Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
@@ -168,8 +171,8 @@ class PropertyDataProvider():
                 raise Exception(
                     "All proxies timed out, replace unusable proxies")
 
-        driver = webdriver.Firefox(
-            options=opts, service_args=service_args, seleniumwire_options={
+        driver = uc.Chrome(
+            chromium_options=opts, seleniumwire_options={
                 'proxy': proxy.get_proxies_dict() if proxy else {}
             })
 
@@ -182,7 +185,7 @@ class PropertyDataProvider():
         driver.implicitly_wait(10)
         return (driver, proxy)
 
-    async def _retrieve_all(self, driver: WebDriver, proxy: Proxy) -> List[Property]:
+    async def _retrieve_all(self, driver: WebDriver, proxy: Union[Proxy, None]) -> List[Property]:
         raise NotImplementedError("Implement _retrieve_all!")
 
     async def retrieve_all_properties(self) -> List[Property]:

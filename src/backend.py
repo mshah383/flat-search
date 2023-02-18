@@ -18,13 +18,13 @@ load_dotenv()
 
 
 # problem in https://github.com/mozilla/geckodriver/issues/776 doesn't work in firefox
-def _scroll_to_element(s, e):
-    s._driver.execute_script(
-        'arguments[0].scrollIntoView(true)', e)
-    return s
+# def _scroll_to_element(s, e):
+#     s._driver.execute_script(
+#         'arguments[0].scrollIntoView(true)', e)
+#     return s
 
 
-ActionChains.scroll_to_element = _scroll_to_element
+# ActionChains.scroll_to_element = _scroll_to_element
 
 
 def property_filter(p: Property, settings: Settings) -> bool:

@@ -19,13 +19,10 @@ RUN PIPENV_VENV_IN_PROJECT=1 pipenv install --deploy --skip-lock
 
 
 FROM base AS runtime
-RUN apt-get update                             \
- && apt-get install -y --no-install-recommends \
-    ca-certificates curl firefox-esr           \
- && rm -fr /var/lib/apt/lists/*                \
- && curl -L https://github.com/mozilla/geckodriver/releases/download/v0.32.0/geckodriver-v0.32.0-linux-aarch64.tar.gz \
- | tar xz -C /usr/local/bin \
- && apt-get purge -y ca-certificates curl
+ARG TARGETPLATFORM
+
+RUN apt install chromium-chromedriver
+
 # Copy virtual env from python-deps stage
 COPY --from=python-deps /.venv /.venv
 ENV PATH="/.venv/bin:$PATH"
