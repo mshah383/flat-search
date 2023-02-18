@@ -11,7 +11,7 @@ RUN sudo apt-get -y install python3-pip
 FROM base AS python-deps
 
 # Install pipenv and compilation dependencies
-RUN pip install pipenv --break-system-packages
+RUN sudo -H pip install pipenv 
 # RUN apt-get update && apt-get install -y --no-install-recommends gcc
 
 # Install python dependencies in /.venv
