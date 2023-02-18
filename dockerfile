@@ -6,12 +6,7 @@ ENV LC_ALL C.UTF-8
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONFAULTHANDLER 1
 
-USER root
-RUN sudo apt-get update && sudo apt-get install python3-distutils -y
-RUN wget https://bootstrap.pypa.io/get-pip.py
-RUN python3 get-pip.py
-RUN python3 -m pip install selenium
-
+RUN apt-get -y install python3-pip
 FROM base AS python-deps
 
 # Install pipenv and compilation dependencies
