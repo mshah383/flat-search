@@ -10,7 +10,8 @@ ENV PYTHONFAULTHANDLER 1
 FROM base AS python-deps
 
 RUN sudo apt-get update
-RUN sudo apt-get -y install python3-pip=3.9.12
+RUN sudo apt-get -y install python3.9.12 
+RUN python3.9 -m pip install pip
 # Install pipenv and compilation dependencies
 RUN sudo -H pip install pipenv 
 # RUN apt-get update && apt-get install -y --no-install-recommends gcc
