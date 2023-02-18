@@ -1,13 +1,10 @@
 import json
-import os
 from sys import argv
 import sys
-from typing import Any, Dict
-from uuid import uuid4
-import requests
+from typing import Dict
 from flask import request
 
-from flask import Flask, jsonify, render_template
+from flask import Flask, render_template
 from threading import Thread
 import logging
 logging.basicConfig(level=logging.DEBUG)

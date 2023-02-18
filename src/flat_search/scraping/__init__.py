@@ -1,8 +1,6 @@
 from enum import Enum
 import logging
-import random
-from time import sleep
-from typing import Callable, List, Tuple
+from typing import List, Tuple
 
 from selenium.webdriver.remote.webdriver import WebDriver
 

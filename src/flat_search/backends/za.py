@@ -1,12 +1,8 @@
 from asyncio import sleep
 from datetime import datetime
-import os
-from typing import Any, Callable, Tuple, Union, List
+from typing import Any, Callable, Union, List
 from flat_search.backends import PropertyDataProvider, Proxy
 from flat_search.data import Property, PropertyType
-import requests as r
-from os import getenv
-from random import randint
 import logging
 from bs4 import BeautifulSoup, Tag
 from dateparser.search import search_dates

@@ -1,7 +1,7 @@
 import datetime
 import logging
 import os
-from typing import Any, List
+from typing import List
 from flat_search.data import Property
 from flat_search.data.changes import PropertyChanges
 

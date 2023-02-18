@@ -1,14 +1,12 @@
 import logging
 import os
 import json
-import random
 from typing import Dict, List, Tuple
 from fake_useragent import UserAgent
 
-from flat_search.data import Property, PropertyType
+from flat_search.data import Property
 from time import time
 from dotenv import load_dotenv
-from fp.fp import FreeProxy
 from selenium.webdriver import FirefoxOptions
 from seleniumwire import webdriver
 from seleniumwire.request import Request as SWRequest

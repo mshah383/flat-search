@@ -1,8 +1,6 @@
 import datetime
-from typing import List
 from selenium.webdriver.common.action_chains import ActionChains
 import os
-from random import randint
 import time
 import asyncio
 import logging

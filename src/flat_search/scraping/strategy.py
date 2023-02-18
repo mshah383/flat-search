@@ -1,9 +1,8 @@
 import logging
-import math
 import random
 from typing import *
 from flat_search.data import Property
-from flat_search.scraping import FailureBehaviour, ScrapeStrategy, SkipBehaviour
+from flat_search.scraping import ScrapeStrategy, SkipBehaviour
 from selenium.webdriver.remote.webdriver import WebDriver
 
 from selenium.webdriver.common.by import By
