@@ -19,9 +19,9 @@ RUN PIPENV_VENV_IN_PROJECT=1 pipenv install --deploy --skip-lock
 
 
 FROM base AS runtime
-RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A6DCF7707EBC211F && /
-    apt-add-repository "deb http://ppa.launchpad.net/ubuntu-mozilla-security/ppa/ubuntu focal main" && /
-    apt update && /
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A6DCF7707EBC211F && \
+    apt-add-repository "deb http://ppa.launchpad.net/ubuntu-mozilla-security/ppa/ubuntu focal main" && \
+    apt update && \
     apt-get install firefox
 # Copy virtual env from python-deps stage
 COPY --from=python-deps /.venv /.venv
