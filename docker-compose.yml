@@ -5,3 +5,4 @@ services:
       - .env
     volumes:
       - ./data:/app/data
+      - ./logs:/app/logs
