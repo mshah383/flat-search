@@ -1,0 +1,10 @@
+[
+    {
+        "pattern": "/",
+        "template": "home_za.html"
+    },
+    {
+        "pattern": "/to-rent/property/<area>",
+        "template": "listings_za.html"
+    }
+]

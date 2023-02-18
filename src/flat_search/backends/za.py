@@ -1,18 +1,23 @@
 from asyncio import sleep
 from datetime import datetime
+import os
 from typing import Any, Callable, Tuple, Union, List
-from flat_search.backends import PropertyDataProvider
+from flat_search.backends import PropertyDataProvider, Proxy
 from flat_search.data import Property, PropertyType
 import requests as r
-from fake_useragent import UserAgent
 from os import getenv
 from random import randint
 import logging
 from bs4 import BeautifulSoup, Tag
 from dateparser.search import search_dates
 from urllib.parse import urlparse
+from flat_search.scraping.strategy import PagedPropertyListingStrategy
 
 from flat_search.settings import Settings
+import time
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webdriver import WebDriver
 
 
 class Za(PropertyDataProvider):
@@ -27,17 +32,13 @@ class Za(PropertyDataProvider):
 
     def __init__(self, settings: Settings) -> None:
         super().__init__(settings)
-        self.url = getenv("ZA_URL_FORMAT",
-                          "set the ZA_URL_FORMAT variable in .env file") + "&is_retirement_home=false"
-        url_kwargs = {
-            "area": self.settings.za_area,
-            "location_query": self.settings.location,
-            "price_min": self.settings.min_price,
-            "price_max": self.settings.max_price,
-        }
+        self.url = urlparse(settings.za_url)
 
-        self.base_url = "{uri.scheme}://{uri.netloc}".format(uri=urlparse(
-            self.url.format(**url_kwargs, page_no=0)))
+        if settings.no_proxy:
+            # don't be crazy! don't get ip banned
+            assert (self.url.netloc.startswith("localhost"))
+
+        self.base_url = "{uri.scheme}://{uri.netloc}".format(uri=self.url)
 
     def result_or_none_if_throws(logged_error_msg: str, callable: Callable[[], Union[Any, None]]):
         """ calls the given function and on an exception, logs it then returns None otherwise returns the result """
@@ -84,88 +85,39 @@ class Za(PropertyDataProvider):
             property_type = PropertyType.DETACHED_HOUSE
         return property_type
 
-    async def retrieve_all_properties(self) -> List[Property]:
-        """ retrieve all properties with the current criteria/filters set while respecting request limits, may throw error if requested too many times.
-                    :raises:
-                        Exception: if used too quickly
-                """
-        await super().retrieve_all_properties()
-        # generate new user agent
-        ua = UserAgent(browsers=['edge', 'chrome', 'safari']).random
-
-        # kwargs without page number
-        url = self.url
-        url += f"&page_size={max(15,min(100,self.settings.scrape_page_size))}"
-        url += f"&results_sort=newest_listings"
-        for property_type in Za.format_property_types(self.settings.property_type_allowlist):
-            url += f"&property_sub_type={property_type}"
-
-        if PropertyType.ROOM not in self.settings.property_type_allowlist:
-            url += f"&is_shared_accommodation=false"
-
-        # select a proxy once per scrape attempt
-        proxy = self.proxies.get(True)
-        logging.info(f"Selected proxy: {proxy}")
-        kwargs = {
-            "proxies": {
-                "http": proxy
-            },
-            "headers": {
-                'User-Agent': ua,
-                'Referer': url.split("?")[0],
-            }
+    async def _retrieve_all(self, driver: WebDriver, proxy: Proxy) -> List[Property]:
+        settings = {
+            #  warmup settings
+            "query_url": self.url._replace(scheme=proxy.url.scheme).geturl(),
+            "query_decoy_queries":  self.settings.decoy_queries,
+            "query_decoy_probability": self.settings.decoy_probability,
+            "query_decoy_max": self.settings.max_decoys,
+            "query_true_query": self.settings.query,
+            "query_textbox_locator": (By.TAG_NAME, "input"),
+            "query_btn_locator": (By.XPATH, "//*[text()='Search']"),
+            # random walk settings
+            "walk_listing_locator": (By.XPATH, "//*[contains(@id, 'listing_')]"),
+            "walk_listing_look_probability": 0.1,
+            "walk_listing_click_probability": 0.3,
+            "walk_listing_look_delay": (0, 0.2),
+            "walk_next_page_btn_locator": (By.XPATH, "//*[contains(.,'Next')]"),
+            "walk_query_pages_max": self.settings.scrape_max_pages,
+            # parsing settings
+            "parse_function": self.parse_page
         }
+        strategy = PagedPropertyListingStrategy(**settings)
+        logging.info(f"Executing za scraping strategy")
+        strategy.execute_strategy(driver)
+        driver.quit()
+        data = strategy.get_data()
+        return data
 
-        url_kwargs = {
-            "area": self.settings.za_area,
-            "location_query": self.settings.location,
-            "price_min": self.settings.min_price,
-            "price_max": self.settings.max_price,
-        }
-
-        # try to get all the available pages, they might change last number available dynamically so keep track of that
-        current_page, has_more_pages = 1, True
-        all_properties = []
-        while has_more_pages and current_page <= self.settings.scrape_max_pages:
-            try:
-                new_properties, has_more_pages = self.parse_page(
-                    current_page, url, url_kwargs, kwargs)
-                all_properties.extend(new_properties)
-                logging.info(f"Properties found so far: {len(all_properties)}")
-                current_page += 1
-                sleep_time = randint(
-                    self.settings.scrape_delay_page_minimum_seconds, self.settings.scrape_delay_page_maximum_seconds)
-                logging.info(
-                    f"Pretending to be human for {sleep_time}s Zzzz...")
-                await sleep(sleep_time)
-            except Exception as E:
-                logging.error(
-                    "Error in parsing page, throwing upwards to prevent incomplete data")
-                raise E
-
-        return all_properties
-
-    def parse_page(self, page_no, url, url_kwargs, request_kwargs) -> Tuple[List[Property], bool]:
+    def parse_page(self, page: str) -> List[Property]:
         """ parses a single page of html content from the provider and returns the properties as well as the last available page """
         # update referer to point to previous page if we are not on the first one
-        if page_no > 1:
-            request_kwargs['headers']['Referer'] = url.format(
-                **url_kwargs, page_no=page_no - 1)
 
-        current_page_url = url.format(**url_kwargs, page_no=page_no)
-        page = r.get(current_page_url,
-                     verify=True, **request_kwargs)
-        if not page.ok:
-            raise RuntimeError("Couldn't scrape page: {}. Ignoring further pages. status:{}, content: {}",
-                               page_no, page.status_code, page.content)
-        else:
-            logging.info(
-                f"Received response for page: {page_no}: {page.status_code}")
-            page = BeautifulSoup(page.content, 'html.parser')
+        page = BeautifulSoup(page, 'html.parser')
 
-        # figure out if more pages exist
-        at_least_one_more_page_navigable = page.find("nav", attrs={"aria-label": "pagination"}
-                                                     ).find_all("a")[-1].attrs.get("href", None) is not None
         properties: List[Property] = []
 
         listing_div: Union[Tag, None]
@@ -189,17 +141,18 @@ class Za(PropertyDataProvider):
             date_found = datetime.now()
 
             bedrooms = Za.result_or_default_if_throws(1,
-                                                      lambda: listing_div.find(
-                                                          "span", string=lambda x: x is not None and "Bedrooms" in x).findNextSibling("span").text)
+                                                      lambda: int(listing_div.find(
+                                                          "span", string=lambda x: x is not None and "Bedrooms" in x).findNextSibling("span").text))
 
             image_urls: List[Tag] = Za.result_or_none_if_throws("Failed to get image URLS",
                                                                 lambda:
-                                                                [x.attrs.get("src")
-                                                                 for x in listing_div.find_all("img")])
+                                                                [x.attrs.get("src") for x in listing_div.find_all("img")
+                                                                 if "static_agent_logo" not in x.attrs.get("src")])
 
             address = Za.result_or_none_if_throws("Failed to get address",
-                                                  lambda: " ".join([x.text for x in listing_div.find(
-                                                      attrs={"data-testid": "listing-title"}).next_siblings]))
+                                                  lambda: " ".join([" ".join(x.text.split()).strip() for x in listing_div.find(
+                                                      attrs={"data-testid": "listing-title"}).next_siblings if str(x)])
+                                                  )
 
             available_from_text = Za.result_or_default_if_throws(None,
                                                                  lambda: listing_div.find(string=lambda x: x is not None and x.strip(
@@ -220,8 +173,8 @@ class Za(PropertyDataProvider):
                     'es'], settings={'DATE_ORDER':  'DMY'}) or [(None, None)]
 
             listing_title = Za.result_or_none_if_throws("Failed to get listing description",
-                                                        lambda: listing_div.find(
-                                                            attrs={"data-testid": "listing-title"}).text)
+                                                        lambda: " ".join(listing_div.find(
+                                                            attrs={"data-testid": "listing-title"}).text.split()).strip())
 
             description = listing_title
 
@@ -234,7 +187,6 @@ class Za(PropertyDataProvider):
                          available_from=available_from, date_listed=date_listed,
                          description=description)
             )
-
         logging.info(
-            f"Properties found on page: {page_no} : {[x.short_summary() for x in properties]}")
-        return (properties, at_least_one_more_page_navigable)
+            f"properties found on current page: {[x.short_summary() for x in properties]}")
+        return properties

@@ -1,0 +1,72 @@
+[
+    {
+        "url": "http://oljvanih:mjigzkhz9vwm@185.199.229.156:7492",
+        "timeout": 3,
+        "used_times": 5,
+        "times_down": 0,
+        "total_failures": 0
+    },
+    {
+        "url": "http://oljvanih:mjigzkhz9vwm@185.199.228.220:7300",
+        "timeout": 3,
+        "used_times": 3,
+        "times_down": 0,
+        "total_failures": 0
+    },
+    {
+        "url": "http://oljvanih:mjigzkhz9vwm@185.199.231.45:8382",
+        "timeout": 3,
+        "used_times": 4,
+        "times_down": 0,
+        "total_failures": 0
+    },
+    {
+        "url": "http://oljvanih:mjigzkhz9vwm@188.74.210.207:6286",
+        "timeout": 3,
+        "used_times": 4,
+        "times_down": 0,
+        "total_failures": 0
+    },
+    {
+        "url": "http://oljvanih:mjigzkhz9vwm@188.74.183.10:8279",
+        "timeout": 3,
+        "used_times": 4,
+        "times_down": 0,
+        "total_failures": 0
+    },
+    {
+        "url": "http://oljvanih:mjigzkhz9vwm@188.74.210.21:6100",
+        "timeout": 3,
+        "used_times": 4,
+        "times_down": 0,
+        "total_failures": 0
+    },
+    {
+        "url": "http://oljvanih:mjigzkhz9vwm@45.155.68.129:8133",
+        "timeout": 3,
+        "used_times": 4,
+        "times_down": 0,
+        "total_failures": 0
+    },
+    {
+        "url": "http://oljvanih:mjigzkhz9vwm@154.95.36.199:6893",
+        "timeout": 3,
+        "used_times": 4,
+        "times_down": 0,
+        "total_failures": 0
+    },
+    {
+        "url": "http://oljvanih:mjigzkhz9vwm@45.94.47.66:8110",
+        "timeout": 3,
+        "used_times": 4,
+        "times_down": 0,
+        "total_failures": 0
+    },
+    {
+        "url": "http://oljvanih:mjigzkhz9vwm@144.168.217.88:8780",
+        "timeout": 3,
+        "used_times": 2,
+        "times_down": 0,
+        "total_failures": 0
+    }
+]

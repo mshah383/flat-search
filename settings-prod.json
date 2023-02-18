@@ -1,0 +1,53 @@
+{
+    "property_type_allowlist": [
+        "flat",
+        "detached house",
+        "terraced house",
+        "studio"
+    ],
+    "decoy_queries": [
+        "London SW10",
+        "london SW10",
+        "London WC1B",
+        "london WC1B",
+        "London NW1",
+        "london nw1",
+        "London EC1A",
+        "london EC1A",
+        "london N4",
+        "London N4",
+        "London SE12",
+        "london se12",
+        "london kensington",
+        "London Kensington",
+        "london slough",
+        "London Slough",
+        "london westminster",
+        "London westminster",
+        "london islington",
+        "London Islington",
+        "london richmond",
+        "London Richmond"
+    ],
+    "decoy_probability": 0.28,
+    "max_decoys": 2,
+    "query": "London",
+    "min_price": 300,
+    "max_price": 1300,
+    "min_bedrooms": 1,
+    "max_bedrooms": 2,
+    "available_from": 1680307200,
+    "scrape_max_pages": 3,
+    "send_removed_properties": false,
+    "cron_expression": "1 8,19 * * Mon-Fri",
+    "cron_expression_variation": 30,
+    "cron_expression_skip_chance": 0.1,
+    "no_proxy": false,
+    "email_recipients": [
+        "makspl17@gmail.com",
+        "12shahm@gmail.com "
+    ],
+    "email_template": "email_template.html",
+    "za_url": "https://www.zoopla.co.uk/",
+    "logging_level": "INFO"
+}
