@@ -134,3 +134,4 @@ data/**
 *.html
 
 log*
+proxies.json
