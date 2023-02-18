@@ -1,6 +1,7 @@
 import logging
 import os
 import json
+import random
 from typing import Dict, List, Tuple
 from fake_useragent import UserAgent
 
@@ -138,7 +139,11 @@ class PropertyDataProvider():
         profile = webdriver.FirefoxProfile()
 
         # choose random user agent
-        user_agent = UserAgent().random
+        user_agent = random.choice(["Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+                                    "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+                                    "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+                                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_2_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"])
+
         logging.info(f"Setting User-Agent to: {user_agent}")
         proxy: Proxy = None
         if not self.settings.no_proxy:

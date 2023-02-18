@@ -135,3 +135,4 @@ data/**
 
 log*
 proxies.json
+**.png
