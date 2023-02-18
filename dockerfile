@@ -9,9 +9,13 @@ ENV PYTHONFAULTHANDLER 1
 
 FROM base AS python-deps
 
-RUN sudo add-apt-repository ppa:deadsnakes/ppa
-RUN sudo apt-get update
-RUN sudo apt-get install python3.9
+RUN sudo apt-get install libssl-dev openssl && \
+   wget https://www.python.org/ftp/python/3.9.12/Python-3.9.12.tgz && \
+   tar xzvf Python-3.9.12.tgz && \
+   cd Python-3.9.12 && \
+   ./configure && \
+   make && \
+   sudo make install
 # Install pipenv and compilation dependencies
 RUN sudo -H pip install pipenv 
 # RUN apt-get update && apt-get install -y --no-install-recommends gcc
