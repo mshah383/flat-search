@@ -6,6 +6,7 @@ ENV LC_ALL C.UTF-8
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONFAULTHANDLER 1
 
+RUN sudo apt-get update
 RUN sudo apt-get -y install python3-pip
 FROM base AS python-deps
 
