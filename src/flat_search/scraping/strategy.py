@@ -240,8 +240,6 @@ class EnterPropertyQuery(ScrapeStrategy):
         logging.info(
             f"{self.log_prefix(level)}Using textbox locator: {self.textbox_locator} found: {(textbox.tag_name,textbox.get_attribute('id'))}")
 
-        driver.save_screenshot('logs/last_screenshot.png')
-
         action = ActionChains(driver).scroll_to_element(
             textbox).move_to_element(textbox).click(textbox)
         # send keys in a human like manner (average delay between keystrokes is 0.167ms)
