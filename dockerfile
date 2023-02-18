@@ -10,8 +10,8 @@ ENV PYTHONFAULTHANDLER 1
 FROM base AS python-deps
 
 RUN  sudo apt-get update && sudo apt-get install libssl-dev openssl && \
-   wget https://www.python.org/ftp/python/3.9.12/Python-3.9.12.tgz && \
-   tar xzvf Python-3.9.12.tgz && \
+   sudo wget https://www.python.org/ftp/python/3.9.12/Python-3.9.12.tgz  && \
+   sudo tar xzvf Python-3.9.12.tgz && \
    cd Python-3.9.12 && \
    ./configure && \
    make && \
