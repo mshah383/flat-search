@@ -1,11 +1,14 @@
-FROM python:3.9.12 as base
+FROM seleniarm/standalone-chromium:110.0 as base
 
 # Setup env
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONFAULTHANDLER 1
-
+RUN apt-get update && apt-get install python3-distutils -y
+RUN wget https://bootstrap.pypa.io/get-pip.py
+RUN python3 get-pip.py
+RUN python3 -m pip install selenium
 
 FROM base AS python-deps
 
@@ -21,8 +24,6 @@ RUN PIPENV_VENV_IN_PROJECT=1 pipenv install --deploy --skip-lock
 FROM base AS runtime
 ARG TARGETPLATFORM
 
-RUN apt install chromium-chromedriver
-
 # Copy virtual env from python-deps stage
 COPY --from=python-deps /.venv /.venv
 ENV PATH="/.venv/bin:$PATH"
@@ -32,4 +33,4 @@ WORKDIR /app
 COPY . .
 
 # Run the application
-CMD python /app/src/backend.py
+CMD python3 /app/src/backend.py
