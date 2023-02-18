@@ -9,12 +9,12 @@ ENV PYTHONFAULTHANDLER 1
 
 FROM base AS python-deps
 
-RUN  sudo apt-get update && sudo apt-get install libssl-dev openssl && \
-   sudo wget https://www.python.org/ftp/python/3.9.12/Python-3.9.12.tgz  && \
+RUN  sudo apt-get update && sudo apt-get install libssl-dev openssl 
+RUN sudo wget https://www.python.org/ftp/python/3.9.12/Python-3.9.12.tgz  && \
    sudo tar xzvf Python-3.9.12.tgz && \
    cd Python-3.9.12 && \
-   ./configure && \
-   make && \
+   sudo ./configure && \
+   sudo make && \
    sudo make install
 # Install pipenv and compilation dependencies
 RUN sudo -H pip install pipenv 
