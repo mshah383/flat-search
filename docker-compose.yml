@@ -6,3 +6,4 @@ services:
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs
+      - ./settings-prod.json:/app/settings-prod.json
