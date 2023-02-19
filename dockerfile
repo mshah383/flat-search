@@ -23,8 +23,7 @@ COPY Pipfile .
 
 # Install python dependencies in /.venv
 RUN . /.venv/bin/activate pip3 install setuptools pipenv
-RUN export PATH="$HOME/.local/bin:$PATH"
-RUN . /.venv/bin/activate && pipenv install --deploy --skip-lock
+RUN . /.venv/bin/activate && /.venv/lib/python3.9/site-packages/pipenv install --deploy --skip-lock
 
 
 
