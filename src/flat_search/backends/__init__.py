@@ -133,7 +133,7 @@ class PropertyDataProvider():
         # setup driver
         opts = uc.ChromeOptions()
         opts.add_argument('--disable-blink-features=AutomationControlled')
-
+        additional_kwargs = {}
         if os.getenv("ENV", "dev") == "dev":
             opts.debugger_address = "localhost:2828"
             # opts.add_argument('--remote-debugging-port=2828')
@@ -141,6 +141,7 @@ class PropertyDataProvider():
         else:
             opts.add_argument("--headless")
             opts.add_argument("--no-sandobx")
+            additional_kwargs['headless'] = True
 
         # choose random user agent
         user_agent = random.choice(["Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
@@ -172,7 +173,6 @@ class PropertyDataProvider():
                 raise Exception(
                     "All proxies timed out, replace unusable proxies")
 
-        additional_kwargs = {}
         chromium_driver = os.environ.get('CHROMIUM_DRIVER', None)
         if chromium_driver:
             logging.info(f"using CHROMIUM_DRIVER={chromium_driver}")
@@ -182,7 +182,7 @@ class PropertyDataProvider():
             logging.info(f"using CHROMIUM_BROWSER={chromium_browser}")
             additional_kwargs['browser_executable_path'] = chromium_browser
         driver = uc.Chrome(
-            chromium_options=opts, seleniumwire_options={
+            options=opts, seleniumwire_options={
                 'proxy': proxy.get_proxies_dict() if proxy else {}
             }, **additional_kwargs)
 
