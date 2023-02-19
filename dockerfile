@@ -11,16 +11,16 @@ FROM base AS python-deps
 
 RUN sudo apt-get update && sudo apt-get install libssl-dev openssl build-essential zlib1g-dev -y
 RUN sudo wget https://www.python.org/ftp/python/3.9.12/Python-3.9.12.tgz  && \
-   sudo tar xzvf Python-3.9.12.tgz && \
-   cd Python-3.9.12 && \
+   sudo tar xzvf Python-3.9.12.tgz
+RUN cd Python-3.9.12 && \
    sudo ./configure --prefix /app_python && \
    sudo make && \
    sudo make install
 
-RUN $HOME/app_python/bin/python3 -m venv /.venv
+RUN /app_python/bin/python3 -m venv /.venv
 
 # Install pipenv and compilation dependencies
-RUN $HOME/app_python/bin/pip3 install pipenv --user
+RUN /app_python/bin/pip3 install pipenv --user
 # RUN apt-get update && apt-get install -y --no-install-recommends gcc
 
 # Install python dependencies in /.venv
