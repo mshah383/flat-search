@@ -23,6 +23,7 @@ COPY Pipfile .
 
 # Install python dependencies in /.venv
 RUN sudo apt install pipenv -y
+RUN /app_python/bin/pip3 install --upgrade setuptools
 RUN PIPENV_VENV_IN_PROJECT=1 pipenv install --deploy --skip-lock
 
 
