@@ -171,10 +171,17 @@ class PropertyDataProvider():
                 raise Exception(
                     "All proxies timed out, replace unusable proxies")
 
+        additional_kwargs = {}
+        chromium_driver = os.environ.get('CHROMIUM_DRIVER', None)
+        if chromium_driver:
+            additional_kwargs['driver_executable_path'] = chromium_driver
+        chromium_browser = os.environ.get('CHROMIUM_BROWSER', None)
+        if chromium_browser:
+            additional_kwargs['browser_executable_path'] = chromium_browser
         driver = uc.Chrome(
             chromium_options=opts, seleniumwire_options={
                 'proxy': proxy.get_proxies_dict() if proxy else {}
-            })
+            }, **additional_kwargs)
 
         def interceptor(request: SWRequest):
             if request.headers.get('user-agent', None):
