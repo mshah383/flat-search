@@ -38,6 +38,7 @@ WORKDIR /app
 # Install application into container
 COPY . .
 
+RUN chmod 777 /usr/bin/chromedriver
 ENV CHROMIUM_DRIVER=/usr/bin/chromedriver
 # Run the application
 CMD /.venv/bin/python /app/src/backend.py
