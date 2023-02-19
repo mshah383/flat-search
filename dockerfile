@@ -19,14 +19,13 @@ RUN cd Python-3.9.12 && \
 
 RUN sudo mkdir /.venv && sudo chmod 777 /app_python /.venv 
 RUN /app_python/bin/python3 -m venv /.venv
-RUN . /.venv/bin/activate
-# Install pipenv and compilation dependencies
-RUN pip install pipenv
-# RUN apt-get update && apt-get install -y --no-install-recommends gcc
+COPY Pipfile .
 
 # Install python dependencies in /.venv
-COPY Pipfile .
-RUN PIPENV_VENV_IN_PROJECT=1 pipenv install --deploy --skip-lock
+RUN . /.venv/bin/activate && \
+   pip install pipenv && \
+   PIPENV_VENV_IN_PROJECT=1 pipenv install --deploy --skip-lock
+
 
 
 FROM base AS runtime
