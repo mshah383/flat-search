@@ -13,13 +13,14 @@ RUN sudo apt-get update && sudo apt-get install libssl-dev openssl build-essenti
 RUN sudo wget https://www.python.org/ftp/python/3.9.12/Python-3.9.12.tgz  && \
    sudo tar xzvf Python-3.9.12.tgz && \
    cd Python-3.9.12 && \
-   sudo ./configure && \
+   sudo ./configure --prefix /app_python && \
    sudo make && \
    sudo make install
 
-RUN python -m pip install pip
+RUN $HOME/app_python/bin/python3 -m venv /.venv
+
 # Install pipenv and compilation dependencies
-RUN sudo -H pip install pipenv 
+RUN $HOME/app_python/bin/pip3 install pipenv --user
 # RUN apt-get update && apt-get install -y --no-install-recommends gcc
 
 # Install python dependencies in /.venv
