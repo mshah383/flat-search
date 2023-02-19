@@ -17,6 +17,7 @@ selenium = "~=4.8.0"
 croniter = "*"
 selenium-wire = "*"
 undetected-chromedriver = "*"
+xvfbwrapper = "*"
 
 [dev-packages]
 pyqt5 = "*"

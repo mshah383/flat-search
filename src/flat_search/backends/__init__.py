@@ -105,6 +105,7 @@ class PropertyDataProvider():
         self.request_limiter_minutes = RequestStopwatchLimit(60, 60)
         self.request_limiter_seconds = RequestStopwatchLimit(1, 1)
         self.proxies: List[Proxy] = []
+        self.vdisplay = None
         if not settings.no_proxy:
             try:
                 with open('proxies.json') as f:
@@ -136,14 +137,12 @@ class PropertyDataProvider():
         additional_kwargs = {
             'version_main': 110
         }
-        if os.getenv("ENV", "dev") == "dev":
-            opts.debugger_address = "localhost:2828"
-            # opts.add_argument('--remote-debugging-port=2828')
-            opts.add_experimental_option('debuggerAddress', "localhost:2828")
-        else:
-            opts.add_argument("--headless")
-            opts.add_argument("--no-sandobx")
-            additional_kwargs['headless'] = True
+
+        if os.getenv("ENV", "dev") != "dev":
+            from xvfbwrapper import Xvfb
+            self.vdisplay = Xvfb(width=1920, height=1080)
+            self.vdisplay.start()
+            # additional_kwargs['headless'] = True
 
         # choose random user agent
         user_agent = random.choice(["Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
@@ -220,12 +219,21 @@ class PropertyDataProvider():
             properties = await self._retrieve_all(driver, proxy)
             logging.info(f"found {len(properties)} properties.")
             driver.quit()
+
+            if self.vdisplay:
+                self.vdisplay.stop()
+
             return properties
         except Exception as E:
             proxy.add_failure()
             self.update_proxy_file()
             driver.save_screenshot('logs/last_screenshot.png')
             send_error_email(self.settings, proxy, E)
+
             logging.exception(
                 f"Exception in backend: {self.__class__.__name__}, marking proxy as failure")
+
+            if self.vdisplay:
+                self.vdisplay.stop()
+
             raise E
