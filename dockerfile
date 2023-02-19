@@ -31,10 +31,11 @@ FROM base AS runtime
 
 # Copy virtual env from python-deps stage
 COPY --from=python-deps /.venv /.venv
+COPY --from=python-deps /app_python /app_python
 VOLUME /app/data
 WORKDIR /app
 # Install application into container
 COPY . .
 
 # Run the application
-CMD . /.venv/bin/python /app/src/backend.py
+CMD /.venv/bin/python /app/src/backend.py
