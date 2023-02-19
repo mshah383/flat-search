@@ -96,7 +96,7 @@ def load_settings() -> Settings:
             level=logging._nameToLevel[settings.logging_level], force=True)
         logging.getLogger().addHandler(TimedRotatingFileHandler(
             'logs/log', when='D', interval=1, backupCount=7))
-        for n, l in logging.getLogger().manager.loggerDict.items():
-            if not n.startswith('root'):
-                l.disabled = True
+        # for n, l in logging.getLogger().manager.loggerDict.items():
+        #     if not n.startswith('root'):
+        #         l.disabled = True
         return settings
