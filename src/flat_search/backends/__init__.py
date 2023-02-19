@@ -140,6 +140,7 @@ class PropertyDataProvider():
             opts.add_experimental_option('debuggerAddress', "localhost:2828")
         else:
             opts.add_argument("--headless")
+            opts.add_argument("--no-sandobx")
 
         # choose random user agent
         user_agent = random.choice(["Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
