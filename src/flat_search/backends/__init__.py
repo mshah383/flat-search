@@ -134,7 +134,7 @@ class PropertyDataProvider():
         opts = uc.ChromeOptions()
         opts.add_argument('--disable-blink-features=AutomationControlled')
         additional_kwargs = {
-            'main_version': 110
+            'version_main': 110
         }
         if os.getenv("ENV", "dev") == "dev":
             opts.debugger_address = "localhost:2828"
