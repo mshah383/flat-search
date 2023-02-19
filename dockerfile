@@ -28,15 +28,13 @@ RUN . /.venv/bin/activate && python3 -m pipenv install --deploy --skip-lock
 
 
 FROM base AS runtime
-ARG TARGETPLATFORM
 
 # Copy virtual env from python-deps stage
 COPY --from=python-deps /.venv /.venv
-ENV PATH="/.venv/bin:$PATH"
 VOLUME /app/data
 WORKDIR /app
 # Install application into container
 COPY . .
 
 # Run the application
-CMD python3 /app/src/backend.py
+CMD . /.venv/bin/python3 /app/src/backend.py
