@@ -16,6 +16,8 @@ RUN sudo wget https://www.python.org/ftp/python/3.9.12/Python-3.9.12.tgz  && \
    sudo ./configure && \
    sudo make && \
    sudo make install
+
+RUN python -m pip install pip
 # Install pipenv and compilation dependencies
 RUN sudo -H pip install pipenv 
 # RUN apt-get update && apt-get install -y --no-install-recommends gcc
