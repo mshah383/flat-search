@@ -19,7 +19,7 @@ RUN cd Python-3.9.12 && \
 
 RUN sudo mkdir /.venv && sudo chmod 777 /app_python /.venv 
 RUN /app_python/bin/python3 -m venv /.venv
-RUN . /.venv
+RUN . /.venv/bin/activate
 # Install pipenv and compilation dependencies
 RUN pip install pipenv
 # RUN apt-get update && apt-get install -y --no-install-recommends gcc
