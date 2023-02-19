@@ -17,6 +17,7 @@ RUN cd Python-3.9.12 && \
    sudo make && \
    sudo make install
 
+RUN sudo chmod 777 /.venv
 RUN /app_python/bin/python3 -m venv /.venv
 
 # Install pipenv and compilation dependencies
