@@ -33,6 +33,7 @@ FROM base AS runtime
 COPY --from=python-deps /.venv /.venv
 COPY --from=python-deps /app_python /app_python
 VOLUME /app/data
+VOLUME /app/logs
 WORKDIR /app
 # Install application into container
 COPY . .
