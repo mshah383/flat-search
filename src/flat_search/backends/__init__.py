@@ -174,9 +174,11 @@ class PropertyDataProvider():
         additional_kwargs = {}
         chromium_driver = os.environ.get('CHROMIUM_DRIVER', None)
         if chromium_driver:
+            logging.info(f"using CHROMIUM_DRIVER={chromium_driver}")
             additional_kwargs['driver_executable_path'] = chromium_driver
         chromium_browser = os.environ.get('CHROMIUM_BROWSER', None)
         if chromium_browser:
+            logging.info(f"using CHROMIUM_BROWSER={chromium_browser}")
             additional_kwargs['browser_executable_path'] = chromium_browser
         driver = uc.Chrome(
             chromium_options=opts, seleniumwire_options={
