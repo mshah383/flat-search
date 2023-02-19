@@ -37,4 +37,4 @@ WORKDIR /app
 COPY . .
 
 # Run the application
-CMD . /.venv/bin/python3 /app/src/backend.py
+CMD . /.venv/bin/python /app/src/backend.py
